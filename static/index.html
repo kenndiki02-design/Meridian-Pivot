@@ -16,26 +16,28 @@
             <div class="brand">
                 <div>
                     <h1>Solstice Events</h1>
-                    <p class="subtitle">Asynchronous Kiosk Check-In & Badge Printer Simulation</p>
+                    <p class="subtitle">Asynchronous Kiosk Check-In & Badge Printer System</p>
                 </div>
             </div>
             <div class="system-status">
                 <span id="mode-badge" class="mode-badge">Initializing Mode...</span>
                 <span class="status-indicator online"></span>
-                <span>Vendor Message Queue: <strong>CONNECTED</strong></span>
+                <span>Queue: <strong>CONNECTED</strong></span>
+                <button id="btn-open-report" class="btn btn-primary btn-sm" title="View attendance summary report">📊 Attendance Report</button>
+                <button id="btn-api-key" class="btn btn-outline btn-sm" title="Configure API Security Key">🔑 API Security</button>
                 <button id="btn-toggle-mode" class="btn btn-outline btn-sm" title="Toggle between Browser Demo Mode and Backend API Mode">🔀 Mode</button>
-                <button id="btn-reset" class="btn btn-secondary btn-sm" title="Reset system state">🔄 Reset System</button>
+                <button id="btn-reset" class="btn btn-secondary btn-sm" title="Reset system state">🔄 Reset</button>
             </div>
         </header>
 
         <!-- Metrics Dashboard -->
         <section class="metrics-grid">
             <div class="metric-card">
-                <span class="metric-label">Total Attendees</span>
+                <span class="metric-label">Total Registered</span>
                 <span class="metric-value" id="count-total">0</span>
             </div>
             <div class="metric-card status-unchecked-card">
-                <span class="metric-label">Unchecked</span>
+                <span class="metric-label">Outstanding</span>
                 <span class="metric-value" id="count-unchecked">0</span>
             </div>
             <div class="metric-card status-pending-card">
@@ -46,6 +48,10 @@
                 <span class="metric-label">Checked In</span>
                 <span class="metric-value" id="count-checked">0</span>
             </div>
+            <div class="metric-card status-failed-card">
+                <span class="metric-label">Failed Check-Ins</span>
+                <span class="metric-value text-danger" id="count-failed">0</span>
+            </div>
         </section>
 
         <!-- Main Layout -->
@@ -53,14 +59,30 @@
             <!-- Left Column: Kiosk Attendees & Scanner -->
             <main class="kiosk-section">
                 <div class="section-header">
-                    <h2>Kiosk Scanning Simulation</h2>
-                    <p>Scan attendee QR code to issue print request to vendor queue.</p>
+                    <h2>Kiosk Scanning & Attendee Lookup</h2>
+                    <p>Search participant records or scan attendee QR codes to issue badge printing jobs.</p>
                 </div>
 
-                <!-- Custom Scan Input -->
+                <!-- Custom Scan Input Bar -->
                 <div class="scan-bar">
                     <input type="text" id="scan-input" placeholder="Enter or Scan Attendee ID (e.g. ATT-001)..." autocomplete="off">
-                    <button id="btn-scan-submit" class="btn btn-primary">🔍 Scan & Issue Print Request</button>
+                    <button id="btn-scan-submit" class="btn btn-primary">📷 Scan & Issue Print Request</button>
+                </div>
+
+                <!-- Search & Status Filter Controls -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="Quick Search by Name, Email, Company, or Ticket Type..." autocomplete="off">
+                        <button id="btn-search-clear" class="btn-clear hidden">✕</button>
+                    </div>
+                    <div class="filter-tabs" id="filter-tabs">
+                        <button class="filter-tab active" data-filter="ALL">All (<span id="tab-count-all">0</span>)</button>
+                        <button class="filter-tab" data-filter="NOT_CHECKED_IN">Outstanding (<span id="tab-count-unchecked">0</span>)</button>
+                        <button class="filter-tab" data-filter="PENDING">Pending (<span id="tab-count-pending">0</span>)</button>
+                        <button class="filter-tab" data-filter="CHECKED_IN">Checked In (<span id="tab-count-checked">0</span>)</button>
+                        <button class="filter-tab filter-tab-failed" data-filter="FAILED">Failed (<span id="tab-count-failed">0</span>)</button>
+                    </div>
                 </div>
 
                 <!-- Attendees Cards Grid -->
@@ -73,12 +95,15 @@
             <aside class="sidebar-section">
                 <!-- Out of Order & Testing Tools -->
                 <div class="panel simulation-panel">
-                    <h3>Edge-Case & Out-of-Order Webhook Testing</h3>
-                    <p class="panel-desc">Test duplicate scan protection & asynchronous webhook resilience.</p>
+                    <h3>Edge-Case & Hardware Testing Tools</h3>
+                    <p class="panel-desc">Simulate printer hardware failures, duplicate scans, and sequence packet inversions.</p>
                     
                     <div class="sim-actions">
                         <button id="btn-sim-duplicate-scan" class="btn btn-warning btn-block">
                             Test Rapid Duplicate Scan (ATT-002)
+                        </button>
+                        <button id="btn-sim-printer-failure" class="btn btn-danger btn-block">
+                            Simulate Hardware Failure Webhook (ATT-004)
                         </button>
                         <button id="btn-sim-out-of-order" class="btn btn-outline btn-block">
                             Send Stale / Out-of-Order Webhook (Seq #999)
@@ -111,9 +136,48 @@
         </div>
     </div>
 
+    <!-- Attendance Summary Modal -->
+    <div id="report-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Event Attendance Summary Report</h2>
+                <button id="btn-close-report" class="btn-close">✕</button>
+            </div>
+            <div class="modal-body" id="report-modal-body">
+                <!-- Dynamic Summary Report Content -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-export-csv" class="btn btn-primary">📥 Download Full CSV Report</button>
+                <button id="btn-close-report-footer" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Security Settings Modal -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2>🔑 Staff API Security Key</h2>
+                <button id="btn-close-auth" class="btn-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm">Enter the staff authorization key to authenticate API check-in scans and reset operations.</p>
+                <div class="form-group">
+                    <label for="api-key-input">X-API-Key</label>
+                    <input type="password" id="api-key-input" placeholder="Default: solstice-secret-key-2026" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-api-key" class="btn btn-primary">Save Key</button>
+                <button id="btn-close-auth-footer" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Alert Modal / Toast notification -->
     <div id="toast-container" class="toast-container"></div>
 
     <script src="./app.js"></script>
 </body>
 </html>
+

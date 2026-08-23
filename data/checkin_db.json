@@ -1,0 +1,72 @@
+{
+  "sequence_counter": 1000,
+  "processed_job_ids": [],
+  "attendees": {
+    "ATT-001": {
+      "id": "ATT-001",
+      "name": "Alice Smith",
+      "email": "alice@solsticeconf.com",
+      "company": "Nexus AI",
+      "ticket_type": "Standard Pass",
+      "ticket_status": "ACTIVE",
+      "status": "NOT_CHECKED_IN",
+      "current_job_id": null,
+      "last_processed_seq": 0,
+      "checked_in_at": null,
+      "failed_reason": null,
+      "notes": null
+    },
+    "ATT-002": {
+      "id": "ATT-002",
+      "name": "Bob Jones",
+      "email": "bob@solsticeconf.com",
+      "company": "Quantum Labs",
+      "ticket_type": "VIP Pass",
+      "ticket_status": "ACTIVE",
+      "status": "NOT_CHECKED_IN",
+      "current_job_id": null,
+      "last_processed_seq": 0,
+      "checked_in_at": null,
+      "failed_reason": null,
+      "notes": null
+    },
+    "ATT-003": {
+      "id": "ATT-003",
+      "name": "Charlie Brown",
+      "email": "charlie@solsticeconf.com",
+      "company": "Peak Systems",
+      "ticket_type": "Speaker Pass",
+      "ticket_status": "ACTIVE",
+      "status": "NOT_CHECKED_IN",
+      "current_job_id": null,
+      "last_processed_seq": 0,
+      "checked_in_at": null,
+      "failed_reason": null,
+      "notes": null
+    },
+    "ATT-004": {
+      "id": "ATT-004",
+      "name": "Diana Prince",
+      "email": "diana@solsticeconf.com",
+      "company": "Themyscira Tech",
+      "ticket_type": "Organizer",
+      "ticket_status": "ACTIVE",
+      "status": "NOT_CHECKED_IN",
+      "current_job_id": null,
+      "last_processed_seq": 0,
+      "checked_in_at": null,
+      "failed_reason": null,
+      "notes": null
+    }
+  },
+  "print_jobs": {},
+  "logs": [
+    {
+      "timestamp": "22:44:27.190",
+      "event_type": "SYSTEM",
+      "attendee_id": "SYS",
+      "details": "Data store initialized with 4 test attendees.",
+      "level": "INFO"
+    }
+  ]
+}

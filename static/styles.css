@@ -129,7 +129,7 @@ body {
 /* Metrics */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 16px;
 }
 
@@ -158,6 +158,9 @@ body {
 .status-unchecked-card .metric-value { color: var(--status-unchecked); }
 .status-pending-card .metric-value { color: var(--status-pending); }
 .status-checked-card .metric-value { color: var(--status-checked); }
+.status-failed-card .metric-value { color: var(--status-failed); }
+
+.text-danger { color: var(--status-failed) !important; }
 
 @keyframes pulse {
     0%, 100% { opacity: 1; }
@@ -215,6 +218,98 @@ body {
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
+/* Search & Filter Bar */
+.filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+#search-input {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    padding: 12px 40px 12px 44px;
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#search-input:focus {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.btn-clear {
+    position: absolute;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.btn-clear:hover {
+    color: var(--text-primary);
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.filter-tab {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: var(--font-main);
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.filter-tab-failed.active {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 /* Buttons */
 .btn {
     padding: 12px 20px;
@@ -229,6 +324,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-height: 44px; /* Mobile touch accessibility requirement */
 }
 
 .btn-primary {
@@ -261,6 +357,16 @@ body {
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 .btn-outline {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -276,6 +382,7 @@ body {
     padding: 8px 14px;
     font-size: 0.8rem;
     border-radius: 8px;
+    min-height: 36px;
 }
 
 .btn-block {
@@ -302,6 +409,11 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+}
+
+.attendee-card.failed-card {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(30, 20, 30, 0.7);
 }
 
 .attendee-card:hover {
@@ -353,6 +465,12 @@ body {
     border: 1px solid rgba(16, 185, 129, 0.4);
 }
 
+.status-FAILED {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
 .attendee-info h3 {
     font-size: 1.15rem;
     font-weight: 600;
@@ -362,6 +480,16 @@ body {
 .attendee-info p {
     font-size: 0.85rem;
     color: var(--text-secondary);
+}
+
+.error-reason {
+    font-size: 0.78rem;
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.15);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 8px;
+    border-left: 3px solid var(--status-failed);
 }
 
 .ticket-tag {
@@ -377,6 +505,176 @@ body {
 .attendee-actions {
     display: flex;
     gap: 8px;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 20px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background: #1e293b;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 750px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.modal-sm {
+    max-width: 450px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.btn-close:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+/* Report Styles */
+.report-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.report-stat-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+
+.report-stat-card .val {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.report-stat-card .lbl {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.report-progress-section {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.progress-bar-bg {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 6px;
+    transition: width 0.4s ease;
+}
+
+.report-table-container {
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.report-table th, .report-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.report-table th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.form-control {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 10px;
+    color: var(--text-primary);
+    outline: none;
 }
 
 /* Sidebar & Panels */
@@ -488,7 +786,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 1000;
+    z-index: 1200;
 }
 
 .toast {
@@ -514,6 +812,13 @@ body {
     to { transform: translateX(0); opacity: 1; }
 }
 
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 1100px) {
+    .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 900px) {
     .main-layout {
         grid-template-columns: 1fr;
@@ -521,4 +826,32 @@ body {
     .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .system-status {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .scan-bar {
+        flex-direction: column;
+    }
+    .report-summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
+
+@media (max-width: 550px) {
+    body {
+        padding: 12px;
+    }
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .attendees-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
