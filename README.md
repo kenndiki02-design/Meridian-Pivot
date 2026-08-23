@@ -2,7 +2,9 @@
 
 An event check-in kiosk application built for **Solstice Events Co.** to handle high-throughput event check-ins during multi-day technology conferences.
 
-This application implements the architecture pivot required by the badge-printer vendor's deprecation of synchronous REST printing in favor of an **asynchronous message queue with webhook callback confirmations**.
+This repository contains **ONE unified solution** supporting two execution environments:
+1. **Local / Backend Mode**: Complete Python & FastAPI backend with REST endpoints, background task workers, and Pytest test suite.
+2. **GitHub Pages / Demo Mode**: Standalone static web frontend that runs 100% in-browser using JavaScript simulation (no Python server required).
 
 ---
 
@@ -16,38 +18,82 @@ Under the new **Asynchronous Architecture**:
 3. The kiosk UI immediately reflects the `PENDING` state while waiting for printer confirmation.
 4. The badge printer processes the job asynchronously and invokes Solstice's webhook endpoint (`/api/webhooks/print-status`).
 5. On receipt of a valid `SUCCESS` webhook payload, the attendee state transitions to `CHECKED_IN`.
-6. **Duplicate Scan Protection**: Rejects duplicate scans during `PENDING` or `CHECKED_IN` states with an HTTP `409 Conflict` error.
+6. **Duplicate Scan Protection**: Rejects duplicate scans during `PENDING` or `CHECKED_IN` states with an HTTP `409 Conflict` error (or browser demo warning).
 7. **Out-of-Order & Idempotency Resilience**: Monotonic sequence tracking ensures out-of-order webhooks do not corrupt attendee states, and duplicate webhook delivery is handled safely.
 
 ---
 
-## 🚀 Architecture & State Machine
+## 🌐 GitHub Pages Deployment
 
+### Static Frontend in Demo Mode
+GitHub Pages is a static file host and **cannot execute Python or FastAPI backends**. To make the frontend independently deployable on GitHub Pages, the application features an automatic **DEMO MODE**:
+
+- When opened from a GitHub Pages URL or `file://` link, the frontend automatically activates **DEMO MODE**.
+- All check-in logic, duplicate scan blocking, async print queue delays (`setTimeout`), out-of-order sequence verification, and audit logging run in pure browser JavaScript.
+- No local server, Python, or database installation is required.
+
+---
+
+### Step-by-Step GitHub Pages Setup Instructions
+
+1. **Push Repository to GitHub**:
+   ```bash
+   git init
+   git add .
+   git commit -m "Add Solstice Events check-in kiosk with GitHub Pages dual-mode support"
+   git branch -M main
+   git remote add origin https://github.com/USERNAME/REPOSITORY.git
+   git push -u origin main
+   ```
+
+2. **Enable GitHub Pages**:
+   - Go to your repository on GitHub (`https://github.com/USERNAME/REPOSITORY`).
+   - Click **Settings** ➔ **Pages** (in the left sidebar under Code and automation).
+   - Under **Build and deployment**:
+     - **Source**: Select `Deploy from a branch`.
+     - **Branch**: Select `main` / `master` branch and `/ (root)` folder.
+   - Click **Save**.
+
+3. **Expected Live GitHub Pages URL**:
+   ```text
+   https://USERNAME.github.io/REPOSITORY/
+   ```
+   *(Or if publishing the `static/` directory as root to a `gh-pages` branch, `https://USERNAME.github.io/REPOSITORY/static/`)*.
+
+---
+
+### 🧪 Evaluator Demo Walkthrough (GitHub Pages or Standalone)
+
+An evaluator visiting the GitHub Pages URL can test the full asynchronous check-in lifecycle:
+
+1. **Scan an Attendee**: Click **📷 Scan QR Code** on **ATT-001 (Alice Smith)**.
+2. **Observe PENDING State**: Status instantly updates to `PENDING (Printing...)`.
+3. **Vendor Queue Visualizer**: Observe the print request appear in the **Vendor Print Queue (Async)** panel.
+4. **Asynchronous Webhook Callback**: After a 1.5-second simulated delay, the simulated webhook confirms printing, transitioning status to **CHECKED IN**.
+5. **Duplicate Scan Protection**: Click **📷 Scan QR Code** on **ATT-001** again (or click **🚫 Test Rapid Duplicate Scan (ATT-002)**). Observe the **DUPLICATE SCAN BLOCKED** warning toast (HTTP 409 Conflict simulation) — no second print request is queued.
+6. **Out-of-Order Webhook Test**: Click **⚡ Send Stale / Out-of-Order Webhook (Seq #999)** for **ATT-003**. Observe the sequence guard blocking stale packets (`action_taken: IGNORED`).
+7. **System Reset**: Click **🔄 Reset System** to restore all attendees to initial seed state.
+
+---
+
+## 🚀 Local Backend Deployment (FastAPI)
+
+When running locally with Python, the frontend automatically detects the FastAPI server and connects in **BACKEND MODE**:
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
 ```
-   +-------------------+
-   | Staff Scans QR    |
-   +---------+---------+
-             |
-             v
-   +-------------------+       Is Attendee PENDING or      YES ➔ REJECT (HTTP 409 Conflict)
-   | Duplicate Scan    | ----------------------------------+   "Duplicate scan blocked"
-   | Check             |
-   +---------+---------+
-             | NO (NOT_CHECKED_IN)
-             v
-   +-------------------+
-   | State ➔ PENDING   |
-   | Publish Print Job |
-   +---------+---------+
-             |
-             v
-   +-------------------+
-   | Vendor Queue      | ── Async Print Delay (1.5s) ──>  Vendor Hardware Printing
-   +-------------------+                                          |
-                                                                  v
-   +-------------------+                               Webhook Callback
-   | State ➔ CHECKED_IN| <── Monotonic Sequence & ────── POST /api/webhooks/print-status
-   +-------------------+     Idempotency Guard
+
+### 2. Start Application Server
+```bash
+python -m uvicorn app.main:app --reload --port 8000
+```
+Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
+
+### 3. Run Automated Pytest Test Suite
+```bash
+python -m pytest tests/ -v
 ```
 
 ---
@@ -58,64 +104,18 @@ Under the new **Asynchronous Architecture**:
 .
 ├── app/
 │   ├── __init__.py
-│   ├── main.py             # FastAPI app, REST endpoints & static mounting
+│   ├── main.py             # FastAPI app, REST endpoints & static root mounting
 │   ├── models.py           # Pydantic schemas, Enums, Webhook & Log models
 │   ├── store.py            # Thread-safe in-memory state store & sequence guard
 │   └── queue_simulator.py  # Asynchronous vendor print queue & webhook dispatcher
 ├── static/
-│   ├── index.html          # Interactive Kiosk UI with live audit logs & test controls
-│   ├── styles.css          # Glassmorphism dark UI design system
-│   └── app.js              # Frontend state polling, event handlers & toast alerts
+│   ├── index.html          # Entry point for GitHub Pages & Local FastAPI
+│   ├── styles.css          # Glassmorphism dark UI design system (relative path)
+│   └── app.js              # Dual-mode frontend (Browser Demo Mode & Backend API Mode)
 ├── tests/
 │   ├── __init__.py
-│   └── test_checkin.py     # Pytest test suite (7+ test scenarios)
-├── README.md               # System documentation & setup guide
+│   └── test_checkin.py     # Pytest test suite (7 test scenarios)
+├── README.md               # Architecture documentation & GitHub Pages deployment guide
 ├── JOURNAL.md              # Learning & Blocker evidence journal
 └── requirements.txt        # Python dependencies
 ```
-
----
-
-## 💻 Installation & Running Locally
-
-### 1. Prerequisites
-- Python 3.9+ installed.
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Start Application Server
-```bash
-python -m uvicorn app.main:app --reload --port 8000
-```
-Open your browser to: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
-
-### 4. Run Automated Tests
-```bash
-python -m pytest tests/ -v
-```
-
----
-
-## 🧪 Test Attendees & Edge-Case Triggers
-
-The system comes pre-loaded with required test attendees:
-
-| Attendee ID | Name | Role | Test Coverage Scenario |
-| ----------- | ---- | ---- | ---------------------- |
-| `ATT-001` | Alice Smith | Standard Pass | Standard Async Check-In (`NOT_CHECKED_IN` ➔ `PENDING` ➔ `CHECKED_IN`) |
-| `ATT-002` | Bob Jones | VIP Pass | Duplicate Scan Protection (Rapid scan triggers HTTP 409 Conflict) |
-| `ATT-003` | Charlie Brown | Speaker Pass | Out-of-Order Webhook Delivery & Idempotency Replay Guard |
-| `ATT-004` | Diana Prince | Organizer | Hardware Print Failure Recovery (Resets to `NOT_CHECKED_IN` for retry) |
-
----
-
-## 📡 API Specs & Endpoint Summary
-
-- `GET /api/attendees`: Retrieve all attendees and current check-in states.
-- `POST /api/scan`: Issue scan check-in. Body: `{"attendee_id": "ATT-001"}`. Returns HTTP 200 or 409 Conflict.
-- `POST /api/webhooks/print-status`: Webhook endpoint for printer vendor callbacks. Body: `{"job_id": "JOB-xxx", "attendee_id": "ATT-001", "status": "SUCCESS", "sequence_number": 1001, "timestamp": "..."}`.
-- `POST /api/simulate/out-of-order`: Simulates edge-case webhooks for interactive visual testing.
-- `POST /api/reset`: Reset state back to clean test data.

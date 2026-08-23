@@ -133,13 +133,6 @@ async def reset_system():
 # Mount Static UI directory
 static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
 if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    app.mount("/static", StaticFiles(directory=static_dir), name="static_alias")
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static_root")
 
-
-@app.get("/")
-async def serve_index():
-    """Serve visual Kiosk Web App UI."""
-    index_file = os.path.join(static_dir, "index.html")
-    if os.path.exists(index_file):
-        return FileResponse(index_file)
-    return {"message": "Solstice Events Check-In API v2.0. Visit /docs for Swagger UI."}

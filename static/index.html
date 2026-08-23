@@ -7,21 +7,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="static/styles.css">
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
             <div class="brand">
+                <div class="logo-icon">⚡</div>
                 <div>
                     <h1>Solstice Events</h1>
                     <p class="subtitle">Asynchronous Kiosk Check-In & Badge Printer Simulation</p>
                 </div>
             </div>
             <div class="system-status">
+                <span id="mode-badge" class="mode-badge">Initializing Mode...</span>
                 <span class="status-indicator online"></span>
                 <span>Vendor Message Queue: <strong>CONNECTED</strong></span>
+                <button id="btn-toggle-mode" class="btn btn-outline btn-sm" title="Toggle between Browser Demo Mode and Backend API Mode">🔀 Mode</button>
                 <button id="btn-reset" class="btn btn-secondary btn-sm" title="Reset system state">🔄 Reset System</button>
             </div>
         </header>
@@ -51,7 +54,7 @@
             <!-- Left Column: Kiosk Attendees & Scanner -->
             <main class="kiosk-section">
                 <div class="section-header">
-                    <h2>Kiosk Scanning Simulation</h2>
+                    <h2>📷 Kiosk Scanning Simulation</h2>
                     <p>Scan attendee QR code to issue print request to vendor queue.</p>
                 </div>
 
@@ -71,25 +74,25 @@
             <aside class="sidebar-section">
                 <!-- Out of Order & Testing Tools -->
                 <div class="panel simulation-panel">
-                    <h3>Edge-Case & Out-of-Order Webhook Testing</h3>
+                    <h3>🧪 Edge-Case & Out-of-Order Webhook Testing</h3>
                     <p class="panel-desc">Test duplicate scan protection & asynchronous webhook resilience.</p>
                     
                     <div class="sim-actions">
                         <button id="btn-sim-duplicate-scan" class="btn btn-warning btn-block">
-                            Test Rapid Duplicate Scan (ATT-002)
+                            🚫 Test Rapid Duplicate Scan (ATT-002)
                         </button>
                         <button id="btn-sim-out-of-order" class="btn btn-outline btn-block">
-                            Send Stale / Out-of-Order Webhook (Seq #999)
+                            ⚡ Send Stale / Out-of-Order Webhook (Seq #999)
                         </button>
                         <button id="btn-sim-duplicate-webhook" class="btn btn-outline btn-block">
-                            Send Idempotent Webhook Replay
+                            🔁 Send Idempotent Webhook Replay
                         </button>
                     </div>
                 </div>
 
                 <!-- Active Print Queue Visualizer -->
                 <div class="panel queue-panel">
-                    <h3>Vendor Print Queue (Async)</h3>
+                    <h3>🖨️ Vendor Print Queue (Async)</h3>
                     <div id="queue-container" class="queue-list">
                         <div class="empty-state">No print jobs in queue.</div>
                     </div>
@@ -98,7 +101,7 @@
                 <!-- Audit Log Console -->
                 <div class="panel log-panel">
                     <div class="panel-header-inline">
-                        <h3>Real-Time Audit Log</h3>
+                        <h3>📜 Real-Time Audit Log</h3>
                         <span class="log-badge" id="log-count">0 logs</span>
                     </div>
                     <div id="log-container" class="log-console">
@@ -112,6 +115,6 @@
     <!-- Alert Modal / Toast notification -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="/static/app.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>
